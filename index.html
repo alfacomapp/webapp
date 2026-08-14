@@ -1212,14 +1212,13 @@
 
         window.handlePasskeyLogin = async function() {
             var u = document.getElementById('loginUsername').value.trim();
-            if(!u) { Swal.fire('Username wajib', 'Isi username dulu, lalu klik Masuk dengan Sidik Jari.', 'warning'); return; }
             if(!window.SimpleWebAuthnBrowser) { Swal.fire('Tidak tersedia', 'Library passkey belum termuat. Coba muat ulang halaman.', 'warning'); return; }
             showFullPageLoading(true);
             try {
                 var start = await apiPost('/api/passkey/login/options', { username: u });
                 if(!start.success) throw new Error(start.message || 'Passkey belum tersedia.');
                 var authResp = await SimpleWebAuthnBrowser.startAuthentication({ optionsJSON: start.options });
-                var res = await apiPost('/api/passkey/login/verify', { username: u, response: authResp });
+                var res = await apiPost('/api/passkey/login/verify', { username: u, challengeId: start.challengeId, response: authResp });
                 showFullPageLoading(false);
                 if(res.success) {
                     Auth.login(res.token, res.user, _authKey);
